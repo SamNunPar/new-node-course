@@ -1,4 +1,9 @@
 const { response } = require('express')
+const bcryptjs = require('bcryptjs')
+const { validationResult } = require('express-validator')
+
+
+const Usuario = require('../models/usuario.js')
 
 
 const usuatiosGet = (req, res = response) => {
@@ -7,13 +12,19 @@ const usuatiosGet = (req, res = response) => {
     })
 }
 
-const usuatiosPost = (req, res = response) => {
+const usuatiosPost = async(req, res = response) => {
+    const { nombre, correo, password, rol } = req.body
+    const usuario = new Usuario({ nombre, correo, password, rol })
+    
 
-    const body = req.body
+    // Encriptar la contraseña
+    const salt = bcryptjs.genSaltSync()
+    usuario.password = bcryptjs.hashSync( password, salt )
+
+    await usuario.save()
 
     res.json({
-        msg: 'post API - Controller',
-        body
+        usuario
     })
 }
 
