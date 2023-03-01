@@ -6,9 +6,21 @@ const { validationResult } = require('express-validator')
 const Usuario = require('../models/usuario.js')
 
 
-const usuatiosGet = (req, res = response) => {
+const usuatiosGet = async(req, res = response) => {
+
+    const { limite = 5, desde = 0 } = req.query;
+    const query = { estado: true }
+
+    const [ total, usuarios ] = await Promise.all([
+        Usuario.countDocuments(query),
+        Usuario.find(query)
+            .skip(Number( desde ))
+            .limit(Number( limite ) )
+    ]);
+
     res.json({
-        msg: 'get API - Controller'
+        total,
+        usuarios
     })
 }
 
@@ -28,14 +40,22 @@ const usuatiosPost = async(req, res = response) => {
     })
 }
 
-const usuatiosPut = (req, res = response) => {
+const usuatiosPut = async(req, res = response) => {
 
-    const id = req.params.id
+    const { id } = req.params
+    const { _id, password, google, ...resto } = req.body
 
-    res.json({
-        msg: 'put API - Controller',
-        id
-    })
+    // Validar TODO contra DB
+    if ( password ) {
+        // Encriptar la contraseña
+        const salt = bcryptjs.genSaltSync()
+        resto.password = bcryptjs.hashSync( password, salt )
+    }
+
+    const usuariodb = await Usuario.findByIdAndUpdate( id, resto )
+
+
+    res.json(usuariodb)
 }
 
 const usuatiosPatch = (req, res = response) => {
@@ -44,10 +64,16 @@ const usuatiosPatch = (req, res = response) => {
     })
 }
 
-const usuatiosDelete = (req, res = response) => {
-    res.json({
-        msg: 'delete API - Controller'
-    })
+const usuatiosDelete = async (req, res = response) => {
+
+    const { id } = req.params
+
+    // Borrado fisico
+    //const usuario = await Usuario.findByIdAndDelete( id )
+
+    const usuario = await Usuario.findByIdAndUpdate( id, {estado:false} );
+
+    res.json(usuario)
 }
 
 
