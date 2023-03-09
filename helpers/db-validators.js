@@ -39,14 +39,6 @@ const CategoriaExistePorId = async (id) => {
   }
 };
 
-/* const CategoriaExistePorNombre = async (nombre) => {
-  console.log(nombre);
-  const existeCategoria = await Categoria.findOne( {nombre} );
-  if(existeCategoria) {
-    throw new Error(`El correo ${nombre}, ya esta registrado`);
-  }
-}; */
-
 const categoriaActiva = async (id = "") => {
   const existeCategoria = await Categoria.findById(id);
   if (!existeCategoria.estado) {
@@ -79,7 +71,6 @@ module.exports = {
   EmailExiste,
   UsuarioExistePorId,
   CategoriaExistePorId,
-  /* CategoriaExistePorNombre, */
   categoriaActiva,
   ProductoExistePorId,
   productoActivo
