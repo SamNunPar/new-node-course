@@ -1,7 +1,8 @@
 const { Router } = require('express');
 const { check } = require("express-validator");
-const { crearProducto } = require('../controllers/productos');
-const { validarJWT, validarCampos } = require('../middlewares');
+const { crearProducto, obtenerProductoId, obtenerProductos, borrarProducto, reactivarProducto, actualizarProducto } = require('../controllers/productos');
+const { ProductoExistePorId, CategoriaExistePorId, productoActivo } = require('../helpers/db-validators');
+const { validarJWT, validarCampos, tieneRol } = require('../middlewares');
 
 const router = Router();
 
@@ -9,34 +10,52 @@ const router = Router();
 // Crear producto - post - token - admin
 router.post('/', [
     validarJWT,
+    tieneRol('ADMIN_ROL'),
     check("nombre", "El nombre es obligatorio").not().isEmpty(),
+    check("categoria", 'No es in id valido').isMongoId(),
+    check("categoria").custom(CategoriaExistePorId),
     validarCampos,
 ], crearProducto)
 
 // Obtener productos - get - publico
-router.get('/', (req, res) => {
-    res.json('obtener')
-})
+router.get('/', obtenerProductos)
 
 // Obtener un producto - get - publico
-router.get('/:id', (req, res) => {
-    res.json('obtener uno')
-})
+router.get('/:id', [
+    check("id", "No es un ID valido").isMongoId(),
+    check('id').custom(ProductoExistePorId),
+    check("id").custom(productoActivo),
+    validarCampos,
+],obtenerProductoId)
 
 // Actualizar producto - post - token - admin
-router.put('/:id', (req, res) => {
-    res.json('actualizar')
-})
+router.put('/:id', [
+    validarJWT,
+    check("nombre", "el nombre es obligatorio").not().isEmpty(),
+    check("id", "No es un ID valido").isMongoId(),
+    check("id").custom(productoActivo),
+    check("id").custom( ProductoExistePorId ),
+    validarCampos,
+],actualizarProducto)
 
 // Borrar producto - delete - token - admin
-router.delete('/:id', (req, res) => {
-    res.json('borrar')
-})
+router.delete('/:id', [
+    validarJWT,
+    tieneRol("ADMIN_ROL"),
+    check("id", "No es un ID valido").isMongoId(),
+    check("id").custom(ProductoExistePorId),
+    check("id").custom(productoActivo),
+    validarCampos,
+],borrarProducto)
 
 // Rectivar producto - post - token - admin
-router.post('/:id', (req, res) => {
-    res.json('reactivar')
-})
+router.post('/:id', [
+    validarJWT,
+    tieneRol("ADMIN_ROL"),
+    check("id").custom(ProductoExistePorId),
+    check("id", "No es un ID valido").isMongoId(),
+    validarCampos,
+],reactivarProducto)
 
 
 module.exports = router;

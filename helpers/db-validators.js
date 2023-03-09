@@ -1,4 +1,5 @@
 const Categoria = require("../models/categoria");
+const Producto = require("../models/producto");
 const Role = require("../models/role");
 const Usuario = require("../models/usuario");
 
@@ -53,6 +54,26 @@ const categoriaActiva = async (id = "") => {
   }
 };
 
+/* 
+  Validaciones para productos
+*/
+
+const ProductoExistePorId = async (id) => {
+  const existeProducto = await Producto.findById(id);
+  if (!existeProducto) {
+    throw new Error(`El producto con el id: ${id}, no existe`);
+  }
+};
+
+const productoActivo = async (id = "") => {
+  const existeProducto = await Producto.findById(id);
+  if (!existeProducto.estado) {
+    throw new Error(`El producto ${existeProducto.nombre} no existe`);
+  }
+};
+
+
+
 module.exports = {
   RolValidator,
   EmailExiste,
@@ -60,4 +81,6 @@ module.exports = {
   CategoriaExistePorId,
   /* CategoriaExistePorNombre, */
   categoriaActiva,
+  ProductoExistePorId,
+  productoActivo
 };
