@@ -46,9 +46,7 @@ const buscarCategorias = async( termino = '', res = response ) => {
 
     const regex = new RegExp( termino, 'i' );
 
-    const categorias = await Categoria.find({
-        $and: [{ nombre: regex }, { estado: true }]
-    })
+    const categorias = await Categoria.find({ nombre: regex, estado: true })
 
 
     res.json({
@@ -63,6 +61,7 @@ const buscarProductos = async( termino = '', res = response ) => {
 
     if ( esMongoID ) {
         const producto = await Producto.findById(termino)
+                            .populate('categoria','nombre')
         return res.json({
             results: ( producto ) ? [ producto ] : []
         })
@@ -70,10 +69,9 @@ const buscarProductos = async( termino = '', res = response ) => {
 
     const regex = new RegExp( termino, 'i' );
 
-    const productos = await Producto.find({
-        $and: [{ nombre: regex }, { estado: true }]
-    })
-
+    const productos = await Producto.find({ nombre: regex, estado: true })
+                            .populate('categoria','nombre')
+                            .populate('usuario','nombre')
 
     res.json({
         results: productos
